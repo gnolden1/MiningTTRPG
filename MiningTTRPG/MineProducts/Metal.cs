@@ -18,9 +18,9 @@
                 new Metal("Copper",
                     [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65],
                     [
-                        (gemstones.Where(x => x.Name == "Azurite").First(), (61, 66)),
-                        (gemstones.Where(x => x.Name == "Malachite").First(), (67, 82)),
-                        (gemstones.Where(x => x.Name == "Turquoise").First(), (83, 100)),
+                        (FindGemstone("Azurite", gemstones), (61, 66)),
+                        (FindGemstone("Malachite", gemstones), (67, 82)),
+                        (FindGemstone("Turquoise", gemstones), (83, 100)),
                     ]
                 ),
                 new Metal("Gold",
@@ -30,13 +30,13 @@
                 new Metal("Iron",
                     [4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37],
                     [
-                        (gemstones.Where(x => x.Name == "Hematite").First(), (51, 71)),
-                        (gemstones.Where(x => x.Name == "Rhodochrosite").First(), (72, 87)),
-                        (gemstones.Where(x => x.Name == "Bloodstone").First(), (88, 90)),
-                        (gemstones.Where(x => x.Name == "Carnelian").First(), (91, 93)),
-                        (gemstones.Where(x => x.Name == "Chrysopidate").First(), (94, 96)),
-                        (gemstones.Where(x => x.Name == "Alexandrite").First(), (97, 98)),
-                        (gemstones.Where(x => x.Name == "Jade").First(), (99, 100)),
+                        (FindGemstone("Hematite", gemstones), (51, 71)),
+                        (FindGemstone("Rhodochrosite", gemstones), (72, 87)),
+                        (FindGemstone("Bloodstone", gemstones), (88, 90)),
+                        (FindGemstone("Carnelian", gemstones), (91, 93)),
+                        (FindGemstone("Chrysopidate", gemstones), (94, 96)),
+                        (FindGemstone("Alexandrite", gemstones), (97, 98)),
+                        (FindGemstone("Jade", gemstones), (99, 100)),
                     ]
                 ),
                 new Metal("Lead",
@@ -64,6 +64,11 @@
                     null
                 ),
             ];
+        }
+
+        private static Gemstone FindGemstone(string name, IEnumerable<Gemstone> gemstones)
+        {
+            return gemstones.Where(x => x.Name == name).First();
         }
     }
 }
