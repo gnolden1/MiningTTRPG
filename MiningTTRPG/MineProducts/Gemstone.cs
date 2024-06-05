@@ -1,5 +1,5 @@
 ﻿namespace MiningTTRPG.MineProducts {
-    public class Gemstone(string name, Gemstone.GemstoneGroup group) : MineProduct {
+    public class Gemstone : MineProduct {
         public enum GemstoneGroup { Ornamental, SemiPrecious, Fancy, Precious, Gems, Jewels }
 
         private static readonly Dictionary<GemstoneGroup, uint> _values = new()
@@ -118,13 +118,16 @@
             },
         };
 
-        public string Name { get; private set; } = name;
-        public GemstoneGroup Group { get; private set; } = group;
-        public Currency Value => Currency.FromGold(_values[Group]);
+        public GemstoneGroup Group { get; private set; }
+
+        private Gemstone(string name, Gemstone.GemstoneGroup group) : base(name)
+        {
+            Group = group;
+        }
 
         public int RollOutput(int quality) => _outputs[Group][quality].Roll();
 
-        public static IEnumerable<Gemstone> InitializeGemstones()
+        public static List<Gemstone> InitializeGemstones()
         {
             return
             [
@@ -144,7 +147,7 @@
                 new("Jasper", GemstoneGroup.SemiPrecious),
                 new("Moonstone", GemstoneGroup.SemiPrecious),
                 new("Onyx", GemstoneGroup.SemiPrecious),
-                new("Quartz Crystal", GemstoneGroup.SemiPrecious),
+                new("Quartz", GemstoneGroup.SemiPrecious),
                 new("Tourmaline", GemstoneGroup.SemiPrecious),
                 new("Zircon", GemstoneGroup.SemiPrecious),
                 new("Alexandrite", GemstoneGroup.Fancy),

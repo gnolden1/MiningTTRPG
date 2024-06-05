@@ -1,13 +1,13 @@
-﻿namespace MiningTTRPG.MineProducts {
-    public class Metal(string name, uint[] outputs, List<(Gemstone, (int, int))>? byproducts) : MineProduct 
-    {
-        public string Name { get; private set; } = name;
-        public uint[] Outputs { get; private set; } = outputs;
-        public List<(Gemstone, (int, int))>? Byproducts { get; private set; } = byproducts;
+﻿using System.Xml.Linq;
 
-        public Currency GetValue(int roll) => Currency.FromGold(Outputs[roll]);
+namespace MiningTTRPG.MineProducts {
+    public class Metal : NonGemstone {
+        private Metal(string name, uint[] outputs, List<(Gemstone, (int, int))>? byproducts) : base(name, outputs, byproducts)
+        {
 
-        public static IEnumerable<Metal> InitializeMetals(IEnumerable<Gemstone> gemstones)
+        }
+
+        public static List<Metal> InitializeMetals(IEnumerable<Gemstone> gemstones)
         {
             return
             [
@@ -31,10 +31,10 @@
                     [4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37],
                     [
                         (FindGemstone("Hematite", gemstones), (51, 71)),
-                        (FindGemstone("Rhodochrosite", gemstones), (72, 87)),
+                        (FindGemstone("Rhodocrosite", gemstones), (72, 87)),
                         (FindGemstone("Bloodstone", gemstones), (88, 90)),
                         (FindGemstone("Carnelian", gemstones), (91, 93)),
-                        (FindGemstone("Chrysopidate", gemstones), (94, 96)),
+                        (FindGemstone("Chrysoprase", gemstones), (94, 96)),
                         (FindGemstone("Alexandrite", gemstones), (97, 98)),
                         (FindGemstone("Jade", gemstones), (99, 100)),
                     ]
@@ -64,11 +64,6 @@
                     null
                 ),
             ];
-        }
-
-        private static Gemstone FindGemstone(string name, IEnumerable<Gemstone> gemstones)
-        {
-            return gemstones.Where(x => x.Name == name).First();
         }
     }
 }
