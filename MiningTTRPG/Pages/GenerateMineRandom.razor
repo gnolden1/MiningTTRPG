@@ -1,0 +1,40 @@
+﻿@page "/generateMineRandom"
+@namespace MiningTTRPG.MineProducts
+
+@code {
+    static List<MineProduct> mineProducts = Controller.MineProducts;
+    static List<MiningTTRPG.Environment> environments = Controller.Environments;
+    bool allowDuds = true;
+
+    string selectedEnvironment = environments.First().Name;
+    string? output;
+
+    // 1. Select environment
+    // 2. Roll product type (table 1.2), can be dud depending on environment
+    // 3. Roll product, can be dud depending on environment
+    // 4. Roll byproduct if relevant
+    // 5. Roll lifespan with environment rules
+    // 6. Roll quality
+}
+
+<h3>Generate Mine</h3>
+<label for="selEnvironment">Choose environment: </label>
+<select name="selEnvironment" id="selEnvironment" @bind="selectedEnvironment">
+    <option value="@selectedEnvironment" selected>@selectedEnvironment</option>
+    @foreach (var environment in environments.Skip(1))
+    {
+        <option value="@environment.Name">@environment.Name</option>
+    }
+</select>
+<br />
+<button type="button" onclick="@rollMine">Roll mine</button>
+<br />
+<p>@output</p>
+
+@code {
+    public void rollMine()
+    {
+        Console.WriteLine($"Selected environment: {selectedEnvironment}");
+        output = Mine.RollMine(environments.First(x => x.Name == selectedEnvironment), (Stone)mineProducts.First(x => x.Name == "Granite"));
+    }
+}

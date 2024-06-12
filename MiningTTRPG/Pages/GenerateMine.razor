@@ -1,0 +1,229 @@
+﻿@page "/generateMine"
+@namespace MiningTTRPG.MineProducts
+@using System.Text
+
+<style>
+    .lifespanDiv {
+        float: left;
+    }
+    label, input, select {
+        display: block;
+    }
+</style>
+
+<!--
+TODO:
+1.  Choices should be saved between page views?
+-->
+
+@code {
+    static List<MineProduct> mineProducts = Controller.MineProducts;
+    static List<MiningTTRPG.Environment> environments = Controller.Environments;
+
+    MiningTTRPG.Environment? _selectedEnvironment;
+    string? SelectedEnvironment
+    {
+        get { return _selectedEnvironment?.Name; }
+        set
+        { 
+            _selectedEnvironment = environments.First(x => x.Name == value);
+            if (SelectedProductType != null)
+                SelectedProductType = _selectedEnvironment.AvailableMineProducts.First().GetType().ToString();
+        }
+    }
+
+    Type? _selectedProductType;
+    string? SelectedProductType
+    {
+        get { return _selectedProductType?.ToString(); }
+        set
+        {
+            _selectedProductType = Type.GetType(value!);
+            if (SelectedProduct != null)
+                SelectedProduct = _selectedEnvironment!.AvailableMineProducts.First(x => x.GetType() == _selectedProductType).Name;
+        }
+    }
+
+    MineProduct? _selectedProduct;
+    string? SelectedProduct
+    {
+        get { return _selectedProduct?.Name; }
+        set
+        {
+            _selectedProduct = mineProducts.First(x => x.Name == value);
+            _selectedByproduct1 = _selectedByproduct2 = null;
+        }
+    }
+
+    Gemstone? _selectedByproduct1;
+    string? SelectedByproduct1
+    {
+        get { return _selectedByproduct1?.Name ?? "selNone"; }
+        set { _selectedByproduct1 = value == "selNone" ? null : (Gemstone) mineProducts.First(x => x.Name == value); }
+    }
+
+    Gemstone? _selectedByproduct2;
+    string? SelectedByproduct2
+    {
+        get { return _selectedByproduct2?.Name ?? "selNone"; }
+        set { _selectedByproduct2 = value == "selNone" ? null : (Gemstone) mineProducts.First(x => x.Name == value); }
+    }
+
+    static string[] lifespanUnits = ["Weeks", "Months", "Years", "Centuries", "Millenniums", "Decamillenniums", "Kilocenturies"];
+    static int[] lifespanMods = [1, 4, 48, 4800, 48000, 480000, 4800000];
+    long[] SelectedLifespanValues = [0, 0, 0, 0, 0, 0, 0];
+    long TotalLifespan()
+    {
+        long sum = 0;
+        for (int i = 0; i < SelectedLifespanValues.Length; i++)
+            sum += SelectedLifespanValues[i] * lifespanMods[i];
+        return sum;
+    }
+
+    int SelectedQuality = 1;
+
+    void CreateMine()
+    {
+        StringBuilder sb = new();
+        sb.AppendLine($"Selected environment: {_selectedEnvironment!.Name}");
+        sb.AppendLine($"Selected product type: {_selectedProductType!.Name}");
+        sb.AppendLine($"Selected product: {_selectedProduct!.Name}");
+
+        sb.Append("Selected byproduct");
+        if (_selectedByproduct1 != null && _selectedByproduct2 != null)
+            if (_selectedByproduct1 == _selectedByproduct2)
+                sb.AppendLine($": {_selectedByproduct1.Name}");
+            else
+                sb.AppendLine($"s: {_selectedByproduct1.Name} and {_selectedByproduct2.Name}");
+        else if (_selectedByproduct1 != null)
+            sb.AppendLine($": {_selectedByproduct1.Name}");
+        else if (_selectedByproduct2 != null)
+            sb.AppendLine($": {_selectedByproduct2.Name}");
+        else
+            sb.AppendLine($"s: None");
+
+        List<string> units = [];
+        for (int i = 0; i < SelectedLifespanValues.Length; i++)
+        {
+            if (SelectedLifespanValues[i] != 0)
+            {
+                units.Add($"{SelectedLifespanValues[i]} {lifespanUnits[i]}");
+            }
+        }
+        sb.AppendLine($"Selected lifespan: {(units.Count == 0 ? "0 weeks" : string.Join(", ", units))}");
+        sb.AppendLine($"Total lifespan: {TotalLifespan()} weeks");
+        sb.AppendLine($"Selected quality: {SelectedQuality}");
+
+        Console.WriteLine(sb.ToString());
+    }
+}
+
+<h3>Generate Mine</h3>
+
+<label for="selEnvironment">Choose environment: </label>
+<select name="selEnvironment" id="selEnvironment" @bind="@SelectedEnvironment">
+    @if(SelectedEnvironment == null) { <option value="selDefault" selected disabled></option> }
+    @foreach (var environment in environments)
+    {
+        <option value="@environment.Name">@environment.Name</option>
+    }
+</select>
+
+<br />
+
+@if (SelectedEnvironment != null)
+{
+    <label for="selProductType">Choose product type: </label>
+    <select name="selProductType" id="selProductType" @bind="@SelectedProductType">
+        @if(SelectedProductType == null) { <option value="selDefault" selected disabled></option> }
+        @foreach (var type in _selectedEnvironment!.AvailableMineProducts.Select(x => x.GetType()).Distinct())
+        {
+            <option value="@type.ToString()">@(type.Name == "ExoticMaterial" ? "Exotic material" : type.Name)</option>
+        }
+    </select>
+}
+
+<br />
+
+@if (SelectedProductType != null)
+{
+    <label for="selProduct">Choose product: </label>
+    <select name="selProduct" id="selProduct" @bind="@SelectedProduct">
+        @if(SelectedProduct == null) { <option value="selDefault" selected disabled></option> }
+        @foreach (var product in _selectedEnvironment!.AvailableMineProducts.Where(x => x.GetType() == _selectedProductType))
+        {
+            <option value="@product.Name">@product.Name</option>
+        }
+    </select>
+}
+
+<br />
+
+<!--
+TODO:
+1.  If marble has lapis lazuli as a byproduct then a second byproduct cannot be chosen. Likewise, if a byproduct is selected from
+    the granite table then lapis lazuli should be unavailable. pain peko
+2.  Simplify code
+-->
+@if (SelectedProduct != null && _selectedProduct is NonGemstone nonGemstone && nonGemstone.Byproducts != null)
+{
+    <label for="selByproduct1">Choose byproduct@(nonGemstone is Stone ? "s" : ""): </label>
+    <select name="selByproduct1" id="selByproduct1" @bind="@SelectedByproduct1">
+        <option value="selNone" selected>None</option>
+        @foreach (var byproduct in nonGemstone.Byproducts.Select(x => x.Item1))
+        {
+            <option value="@byproduct.Name">@byproduct.Name</option>
+        }
+        @if (_selectedProduct.Name == "Marble")
+        {
+            foreach (Gemstone additionalByproduct in ((NonGemstone) mineProducts.First(x => x.Name == "Granite")).Byproducts!.Select(y => y.Item1))
+            {
+                <option value="@additionalByproduct.Name">@additionalByproduct.Name</option>
+            }
+        }
+    </select>
+    @if (nonGemstone is Stone)
+    {
+        <select name="selByproduct2" id="selByproduct2" @bind="@SelectedByproduct2">
+            <option value="selNone" selected>None</option>
+            @foreach (var byproduct in nonGemstone.Byproducts.Select(x => x.Item1))
+            {
+                <option value="@byproduct.Name">@byproduct.Name</option>
+            }
+            @if (_selectedProduct.Name == "Marble")
+            {
+                foreach (Gemstone additionalByproduct in ((NonGemstone)mineProducts.First(x => x.Name == "Granite")).Byproducts!.Select(y => y.Item1))
+                {
+                    <option value="@additionalByproduct.Name">@additionalByproduct.Name</option>
+                }
+            }
+        </select>
+    }
+}
+
+<br />
+
+@if (SelectedProduct != null)
+{
+    <h4>Lifespan</h4>
+    @for (int i = 0; i < lifespanMods.Length; i++)
+    {
+        string unit = lifespanUnits[i];
+        int localCopy = i;
+        <div class="lifespanDiv">
+            <label for="selLifespan@(unit)">@unit</label>
+            <input type="number" min="0" name="selLifespan@(unit)" id="selLifespan@(unit)" value="@SelectedLifespanValues[localCopy]" @onchange="@(e => SelectedLifespanValues[localCopy] = long.Parse(e.Value!.ToString()!))" />
+        </div>
+    }
+    <br style="clear:both" />
+    <p>Total lifespan: @TotalLifespan() weeks</p>
+
+    <br />
+
+    <label for="selQuality">Choose quality: </label>
+    <input type="number" min="1" max="12" name="selQuality" id="selQuality" @bind="@SelectedQuality" />
+
+    <br />
+
+    <button type="button" @onclick="@CreateMine">Create mine</button>
+}

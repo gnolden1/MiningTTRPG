@@ -93,7 +93,7 @@ namespace MiningTTRPG {
                     ],
                     12, 2, 6, 26
                 ),
-                new("VolcanicLand",
+                new("Volcanic Land",
                     [
                         FindMineProduct("Granite", mineProducts),
                         FindMineProduct("Basalt", mineProducts),

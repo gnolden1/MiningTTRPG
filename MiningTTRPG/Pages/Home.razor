@@ -26,7 +26,7 @@ Welcome to your new app.
             <tr>
                 <td>@metal.Name</td>
                 <td>@(String.Concat(metal.Outputs.Select(x => x.ToString() + ", ")))</td>
-                <td>@(metal.Byproducts == null ? "" : String.Concat(metal.Byproducts.Select(x => x.Item1.Name + ", ")))</td>
+                <td>@(metal.Byproducts == null ? "" : String.Join(", ", metal.Byproducts.Select(x => x.Item1.Name)))</td>
             </tr>
         }
     </tbody>
